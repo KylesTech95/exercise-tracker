@@ -74,15 +74,23 @@ app.post('/api/users/:_id/exercises',async (req,res)=>{
     else{
       const exerciseObj = new Exercise({
         _id: userId._id,
-        username: userId.username,
         description: description,
         duration:duration,
         date: date ? new Date(date) : new Date()
       })
       const exercise = await exerciseObj.save()
+      // const exercises = await Exercise.find({})
+      // //test to see if exercises are saved.
+      // const log = exercises.map(e=>({
+      //   description: e.description,
+      //   duration: e.duration,
+      //   date: e.date.toDateString()
+      // }))
+      // console.log(log)
+
       res.json({
-        _id:exercise._id,
-        username: exercise.username,
+        _id:userId._id,
+        username: userId.username,
         description: exercise.description,
         duration: exercise.duration,
         date: new Date(exercise.date).toDateString()
@@ -94,6 +102,52 @@ app.post('/api/users/:_id/exercises',async (req,res)=>{
   }
 })
 
+app.get("/api/users/:_id/logs", async (req,res)=>{
+  const { from, to, limit } = req.query;
+  const id = req.params._id;
+  const user = await User.findById(id)
+
+  if(!user){
+    res.send("User not found")
+    return;
+  }
+  // build a filter query
+  let dateObj = {};
+   if(from){
+    dateObj["$gte"] = new Date(from)
+   }
+   if(to){
+    dateObj["$lte"] = new Date(to)
+   }
+  let filter = {_id:user._id}
+  if(from||to){
+    filter.date = dateObj
+  }
+  const exercises = await Exercise.find(filter).limit(+limit ?? 500)
+  // const exercises = await Exercise.find({})
+
+  const log = exercises.map(e=>({
+    description: e.description,
+    duration: e.duration,
+    date: e.date.toDateString()
+  }))
+
+  res.json({
+    username:user.username,
+    count:exercises.length,
+    _id: user._id,
+    log
+  })
+  
+})
+// endpoint created to delete everything in db
+// app.get("/api/users/drop", async (req,res)=>{
+//   // deleteMany() from users
+//   await User.deleteMany({})
+//   await Exercise.deleteMany({})
+//   res.send("All data has been dropped")
+  
+// })
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
 })
