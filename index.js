@@ -141,13 +141,13 @@ app.get("/api/users/:_id/logs", async (req,res)=>{
   
 })
 // endpoint created to delete everything in db
-// app.get("/api/users/drop", async (req,res)=>{
-//   // deleteMany() from users
-//   await User.deleteMany({})
-//   await Exercise.deleteMany({})
-//   res.send("All data has been dropped")
+app.get("/api/users/drop", async (req,res)=>{
+  // deleteMany() from users
+  await User.deleteMany({})
+  await Exercise.deleteMany({})
+  res.sendFile(__dirname + '/views/drop.html')
   
-// })
+})
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
 })
