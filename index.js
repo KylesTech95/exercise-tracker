@@ -10,7 +10,7 @@ const Schema = mongoose.Schema
 mongoose.connect(process.env.URI)
 // create 2 databases in client & create collections for each db
 const exerciseSchema = new Schema({
-username:{type:String},
+username:{type:String,unique:true,required:true},
 description: {type:String},
 duration: Number,
 date: Date
