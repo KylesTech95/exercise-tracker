@@ -101,9 +101,7 @@ app.get('/api/users/:_id/exercises',async (req,res)=>{
   }
 })
 app.post('/api/users/:_id/exercises',async (req,res)=>{
-  let description = req.body.description;
-  let duration  = req.body.duration;
-  let date = req.body.date;
+  let { description, duration, date } = req.body
   let id = req.params._id;
 
   try{
