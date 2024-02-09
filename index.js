@@ -24,7 +24,6 @@ const User = mongoose.model('User',userSchema)
 //________________________________
 
 
-
 app.use(cors())
 app.use(express.json())
 app.use(bP.urlencoded({extended:true}))
@@ -36,30 +35,71 @@ app.get('/', (req, res) => {
 
 
 
-// post /api/users
+
+// post usernames to the DB
 app.post('/api/users', async (req,res)=>{
+  
   let name = req.body.username
   const usName = new User({
     username: name
   })
+  const usersCount = await User.find({})
+  let len = usersCount.length+1
+  console.log(len)
   const saveNewUser = await usName.save()
+  console.log("User saved:")
+  console.log(saveNewUser)
   return !name ? res.json({error: "Enter a username"}) : res.json({username:usName.username,_id:usName._id})
 })
 
 // get list of usernames from users collection
 app.get('/api/users/', async (req,res)=>{
-  const getUsers = await User.find()
-  // for fun: access getUsers array and returning the usernames only
-  let arr = [];
-  for(let i = 0; i < getUsers.length; i++){
-    console.log(getUsers[i])
-    arr.push(getUsers[i].username)
+  const getUsers = await User.find().select("_id username")
+
+  try{
+    console.log(getUsers)
+    res.json(getUsers)
   }
-  // returning getUsers array
-  res.json(getUsers)
+  catch(err){
+    console.log(err)
+    res.send("User not found") 
+  }
+
 
 })
+app.get('/api/users/:_id/exercises',async (req,res)=>{
+  // let description = req.body.description;
+  // let duration  = req.body.duration;
+  // let date = req.body.date;
+  let id = req.params._id;
 
+  try{
+    const userId = await User.findById(id)
+    const exercise = await Exercise.findById(id)
+
+    if(!userId){
+      res.send("User not found")
+    }
+    else if(!exercise){
+      res.send("Exercise not listed")
+    }
+    else{
+     
+      // console.log(log)
+
+      res.json({
+        _id:userId._id,
+        username: userId.username,
+        description: exercise.description,
+        duration: exercise.duration,
+        date: new Date(exercise.date).toDateString()
+      })
+    }
+  }
+  catch(err){
+    console.log(err)
+  }
+})
 app.post('/api/users/:_id/exercises',async (req,res)=>{
   let description = req.body.description;
   let duration  = req.body.duration;
@@ -140,12 +180,30 @@ app.get("/api/users/:_id/logs", async (req,res)=>{
   })
   
 })
+const removeItems = async (res) => {
+  let u = await User.deleteMany({})
+  let e = await Exercise.deleteMany({})
+  console.log("Deleted Items")
+  console.log(u,e)
+  res.sendFile(__dirname + '/views/drop.html')
+}
 // endpoint created to delete everything in db
 app.get("/api/users/drop", async (req,res)=>{
-  // deleteMany() from users
-  await User.deleteMany({})
-  await Exercise.deleteMany({})
-  res.sendFile(__dirname + '/views/drop.html')
+  let count = await User.find({})
+  let len = +count.length
+
+  console.log(`len: ${len}` )
+  switch(true){
+    case len < 1:
+      console.log("Nothing to remove")
+      res.send("Nothing to remove")
+    break;
+    case len >= 1:
+      removeItems(res)
+    break;
+    default:
+    console.log(undefined)
+  }
   
 })
 const listener = app.listen(process.env.PORT || 3000, () => {
