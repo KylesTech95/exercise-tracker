@@ -10,7 +10,7 @@ const Schema = mongoose.Schema
 mongoose.connect(process.env.URI)
 // create 2 databases in client & create collections for each db
 const exerciseSchema = new Schema({
-username:{type:String,unique:true,required:true},
+username:{type:String},
 description: {type:String},
 duration: Number,
 date: Date
@@ -107,23 +107,22 @@ app.post('/api/users/:_id/exercises',async (req,res)=>{
   try{
     const userId = await User.findById(id)
     if(!userId){
-      res.send("User not found")
+      res.send("User not found & ID not found")
     }
     else{
       const exerciseObj = new Exercise({
-        _id: userId._id,
         description,
         duration,
         date: date ? new Date(date) : new Date()
       })
       const exercise = await exerciseObj.save()
-      // const exercises = await Exercise.find({})
-      // //test to see if exercises are saved.
-      // const log = exercises.map(e=>({
-      //   description: e.description,
-      //   duration: e.duration,
-      //   date: e.date.toDateString()
-      // }))
+      const exercises = await Exercise.find({})
+      //test to see if exercises are saved.
+      const log = exercises.map(e=>({
+        description,
+        duration,
+        date: e.date.toDateString()
+      }))
       // console.log(log)
 
       res.json({
