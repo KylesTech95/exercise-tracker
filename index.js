@@ -159,7 +159,7 @@ app.get("/api/users/:_id/logs", async (req,res)=>{
    if(to){
     dateObj["$lte"] = new Date(to)
    }
-  let filter = {_id:user._id}
+  let filter = {username:user.username}
   if(from||to){
     filter.date = dateObj
   }
