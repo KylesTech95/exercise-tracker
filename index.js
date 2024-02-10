@@ -68,40 +68,41 @@ app.get('/api/users/', async (req,res)=>{
 
 })
 app.get('/api/users/:_id/exercises',async (req,res)=>{
-  // let description = req.body.description;
-  // let duration  = req.body.duration;
-  // let date = req.body.date;
   let id = req.params._id;
+  let username = await User.findById(id)
+  let exercise = await Exercise.find({username:username.username})
 
-  try{
-    const userId = await User.findById(id)
-    const exercise = await Exercise.findById(id)
+  console.log(exercise)
 
-    if(!userId){
-      res.send("User not found")
-    }
-    else if(!exercise){
-      res.send("Exercise not listed")
-    }
-    else{
+  // try{
+  //   const userId = await User.findById(id)
+
+  //   if(!userId){
+  //     res.send("User not found")
+  //   }
+  //   else if(!userId){
+  //     res.send("Exercise not listed")
+  //   }
+  //   else{
      
-      // console.log(log)
-
-      res.json({
-        _id:userId._id,
-        username: userId.username,
-        description: exercise.description,
-        duration: exercise.duration,
-        date: new Date(exercise.date).toDateString()
-      })
-    }
-  }
-  catch(err){
-    console.log(err)
-  }
+  //     // console.log(log)
+  //     const exercise = await Exercise.findById(id)
+  //     res.json({
+  //       _id:userId._id,
+  //       username: userId.username,
+  //       description: exercise.description,
+  //       duration: exercise.duration,
+  //       date: new Date(exercise.date).toDateString()
+  //     })
+  //   }
+  // }
+  // catch(err){
+  //   console.log(err)
+  // }
 })
+
 app.post('/api/users/:_id/exercises',async (req,res)=>{
-  let { description, duration, date } = req.body
+  let { description, duration, date, username} = req.body
   let id = req.params._id;
 
   try{
@@ -111,14 +112,16 @@ app.post('/api/users/:_id/exercises',async (req,res)=>{
     }
     else{
       const exerciseObj = new Exercise({
+        username:userId.username,
         description,
         duration,
-        date: date ? new Date(date) : new Date()
+        date: date ? new Date(date).toDateString() : new Date().toDateString()
       })
       const exercise = await exerciseObj.save()
       const exercises = await Exercise.find({})
       //test to see if exercises are saved.
       const log = exercises.map(e=>({
+        username,
         description,
         duration,
         date: e.date.toDateString()
@@ -180,6 +183,7 @@ app.get("/api/users/:_id/logs", async (req,res)=>{
 const removeItems = async (res) => {
   let u = await User.deleteMany({})
   let e = await Exercise.deleteMany({})
+
   console.log("Deleted Items")
   console.log(u,e)
   res.sendFile(__dirname + '/views/drop.html')
